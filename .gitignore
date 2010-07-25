@@ -1,0 +1,4 @@
+raw/*.skip
+raw/*.html
+*.json
+errors.log
