@@ -13,6 +13,8 @@ Requirements
 Ruby
 HTTParty for fetching the data
 Nokogiri for parsing the HTML
+Proj for converting NZMG to WGS84 - http://trac.osgeo.org/proj/
+Python if you want to tidy the json output
 
 In addition, the script has only been tested/run under Mac OSX.
 

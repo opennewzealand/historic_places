@@ -19,7 +19,7 @@ class Place
                 { :html_id => "ctl12_ctl02_PropertyRPT_ctl00_trEntryDate",                :output_name => "Entry Date",           :processor => :h6_single},
                 
                 #Need to convert geo data - Source data does not yet have the correct easting and northing data
-                { :html_id => "ctl12_ctl02_PropertyRPT_ctl00_trGPSReferences",            :output_name => 'gps_ref',              :processor => :h6_ul},
+                { :html_id => "ctl12_ctl02_PropertyRPT_ctl00_trGPSReferences",            :output_name => 'gps_ref',              :processor => :geo},
 
                 { :html_id => "ctl12_ctl02_PropertyRPT_ctl00_trInformationSources",       :output_name => "information_sources",  :processor => :h6_ul},
 
@@ -137,6 +137,12 @@ class Place
       when :links
         links = extract_links(@doc.css("##{field[:html_id]}"))
         o[field[:output_name].to_sym] = links
+      when :geo
+          if !@doc.css("##{field[:html_id]} ul").children.empty?
+            coords = @doc.css("##{field[:html_id]} ul").children.map { |text| strip_chars(text.content).gsub(",","") }[0].split
+            wgs84 = (`echo \"#{coords[1]} #{coords[3]}\" | proj -I -f \"%0.5f\" +init=epsg:27200`).strip.split("\t")
+            o[field[:output_name].to_sym] = {:nzmg => {:easting => coords[1].to_f, :northing => coords[3].to_f}, :wgs84 => {:latitude => wgs84[1].to_f, :longitude => wgs84[0].to_f}}
+          end
       else
         #Throw up any missing data so we can add a processor for it
         text = @doc.css("##{field[:html_id]}").inner_text

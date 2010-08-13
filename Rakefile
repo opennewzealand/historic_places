@@ -3,9 +3,11 @@ require "logger"
 
 desc "download records from the site"
 task :download_records do
+  ENV["overwrite"] == ("true" || "True" || 1) ? overwrite = true : overwrite = false
+  
   if ENV["start"] && ENV["end"]
     (ENV['start'].to_i..ENV['end'].to_i).each do |record_number|
-      place = Place.new(record_number, false)
+      place = Place.new(record_number, overwrite)
       if place.valid_record?
         p "Processing: #{record_number}"
         f = File.new("raw/#{record_number}.html", "w")
@@ -72,6 +74,15 @@ namespace :json do
       data.close
     else
       p "Example Usage: rake json:all_from_cache start=1 end=100"
+    end
+  end
+
+  desc "Tidy the JSON output so it is nicely formatted"
+  task :tidy do
+    if ENV["input"] && ENV["output"]
+      system "python -c \"import sys,json; print json.dumps(json.loads(open(sys.argv[1], 'rb').read()), indent=2)\" #{ENV['input']} > #{ENV['output']}"
+    else
+      p "Example Usage: rake json:tidy input=all.json output=all_formatted.json"
     end
   end
 end
